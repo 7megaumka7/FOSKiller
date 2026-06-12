@@ -340,7 +340,7 @@ def run_cve_53646(
                 "seq": seq,
                 "http_status": r.status_code,
                 "timestamp_unix": ts_before,
-                "timestamp_iso": datetime.datetime.utcfromtimestamp(ts_before).isoformat() + "Z",
+                "timestamp_iso": datetime.datetime.fromtimestamp(ts_before, tz=datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
                 "response_ms": round((ts_after - ts_before) * 1000),
                 "body": body,
                 "token": _extract_token(body),
@@ -444,12 +444,12 @@ def run_cve_53646(
                 print(f"  {Fore.CYAN}→{Style.RESET_ALL} {step}")
 
             if req1.get("timestamp_unix"):
-                anchor = datetime.datetime.utcfromtimestamp(req1["timestamp_unix"])
-                now = datetime.datetime.utcnow()
+                anchor = datetime.datetime.fromtimestamp(req1["timestamp_unix"], tz=datetime.timezone.utc)
+                now = datetime.datetime.now(tz=datetime.timezone.utc)
                 age = round((now - anchor).total_seconds(), 1)
                 print(f"\n  {Fore.YELLOW}Timing Metadata:{Style.RESET_ALL}")
                 print(f"  Token T1 anchor  : {req1['timestamp_iso']}")
-                print(f"  Current UTC      : {now.isoformat()}Z")
+                print(f"  Current UTC      : {now.isoformat().replace('+00:00', 'Z')}")
                 print(f"  Token T1 age     : {age}s (still valid if unpatched)")
 
     except Exception as e:
@@ -499,7 +499,7 @@ def print_summary(results: list[dict], ver: str | None) -> None:
 # ---------------------------------------------------------------------------
 
 def save_output(results: list[dict], version: str | None, path: str) -> None:
-    ts = datetime.datetime.utcnow().isoformat() + "Z"
+    ts = datetime.datetime.now(tz=datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     out = {
         "tool": "FOSKiller",
         "version": VERSION,
